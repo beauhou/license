@@ -11,6 +11,7 @@
     <modules>
         <module>register-machine</module>
         <module>license-core</module>
+        <module>license-example</module>
     </modules>
 
 

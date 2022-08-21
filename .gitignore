@@ -1,1 +1,6 @@
 /.idea/
+/license.iml
+/register-machine/register-machine.iml
+/register-machine/target/
+/license-core/target/
+/license-core/license-core.iml
