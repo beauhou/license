@@ -6,6 +6,7 @@ import com.beauhou.license.core.verification.CoreVerification;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * @author: BeauHou
@@ -13,6 +14,8 @@ import java.util.concurrent.TimeUnit;
  * @Description:
  */
 public class LicenseProcess {
+
+    private static Logger logger = Logger.getLogger("LicenseProcess");
 
     /**
      * 调度线程池
@@ -24,16 +27,18 @@ public class LicenseProcess {
      *
      * @param licenseProperties 配置信息
      */
-    public static void start(LicenseProperties licenseProperties)   {
+    public static void start(LicenseProperties licenseProperties) {
 
         CoreVerification coreVerification = new CoreVerification();
-        try {
-            if (!coreVerification.verifyLicense(licenseProperties)) {
-                System.out.println("授权信息不正确将退出");
+        if (!coreVerification.verifyLicense(licenseProperties, true)) {
+            logger.warning("授权信息不正确将退出");
+            System.exit(0);
+        }
+        scheduled.scheduleAtFixedRate(() -> {
+            if (!coreVerification.verifyLicense(licenseProperties, false)) {
+                logger.warning("授权信息不正确将退出");
                 System.exit(0);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        }, 1, 1, TimeUnit.DAYS);
     }
 }

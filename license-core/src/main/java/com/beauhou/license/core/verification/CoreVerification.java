@@ -8,10 +8,13 @@ import com.beauhou.license.core.utils.HardwareInformUtils;
 import com.beauhou.license.core.mode.AuthorPartInfo;
 import com.beauhou.license.core.mode.LicenseInfo;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * 核心验证服务
@@ -22,8 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CoreVerification {
 
-
-    private static ScheduledExecutorService scheduled = new ScheduledThreadPoolExecutor(1);
+    private Logger logger = Logger.getLogger("CoreVerification");
 
     /**
      * 验证授权码
@@ -32,14 +34,21 @@ public class CoreVerification {
      * @return
      * @throws Exception
      */
-    public boolean verifyLicense(LicenseProperties licenseProperties) throws Exception {
-        LicenseInfo licenseInfo = RsaEncrypt.decrypt(licenseProperties.getLicensePath(), licenseProperties.getPubKeyPath());
-        System.out.println(String.format("%s,欢迎使用", licenseInfo.getAuthorPartInfo().getName()));
-        System.out.println(String.format("copyright %s", licenseInfo.getCopyright()));
-        if (licenseInfo.getAuthorPartInfo().getLongTerm()) {
-            System.out.println(String.format("到期时间： 永久", licenseInfo.getCopyright()));
-        } else {
-            System.out.println(String.format("到期时间： %s", licenseInfo.getAuthorPartInfo().getExpireTime()));
+    public boolean verifyLicense(LicenseProperties licenseProperties, boolean isFirst) {
+        LicenseInfo licenseInfo = null;
+        try {
+            licenseInfo = RsaEncrypt.decrypt(licenseProperties.getLicensePath(), licenseProperties.getPubKeyPath());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (isFirst) {
+            logger.info(String.format("%s,欢迎使用", licenseInfo.getAuthorPartInfo().getName()));
+            logger.info(String.format("copyright %s", licenseInfo.getCopyright()));
+            if (licenseInfo.getAuthorPartInfo().getLongTerm()) {
+                logger.info(String.format("到期时间： 永久", licenseInfo.getCopyright()));
+            } else {
+                logger.info(String.format("到期时间： %s", licenseInfo.getAuthorPartInfo().getExpireTime()));
+            }
         }
         LicenseFactory.build(licenseInfo.getAuthorPartInfo(), licenseProperties.getSignatureKey());
         if (!verifySignature(licenseInfo)) {
@@ -55,12 +64,11 @@ public class CoreVerification {
      * @return true-验证成功  false-验证是失败
      */
     private boolean verifySignature(LicenseInfo licenseInfo) {
-
         return licenseInfo.getSignature().equals(SignatureHandler.signature());
     }
 
     /**
-     * 验证硬件信息是否匹配
+     * 验证其他信息
      *
      * @return true验证成功  false-验证失败
      */
@@ -68,8 +76,22 @@ public class CoreVerification {
         AuthorPartInfo authorPartInfo = LicenseFactory.getCurrentAuthorPartInfo();
         List<String> localIPS = HardwareInformUtils.getLocalIPS();
         if (!localIPS.contains(authorPartInfo.getIp())) {
-            System.out.println("ip信息不正确");
+            logger.warning("ip信息不正确");
             return false;
+        }
+        //验证有效期
+        if (!authorPartInfo.getLongTerm()) {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date parseDate = simpleDateFormat.parse(authorPartInfo.getExpireTime());
+                //授权验证码即将过期
+                if (new Date().compareTo(parseDate) < 0) {
+                    logger.warning("有效期已过");
+                    return false;
+                }
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
         return true;
     }

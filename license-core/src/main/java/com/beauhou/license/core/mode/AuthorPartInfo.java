@@ -13,19 +13,10 @@ public class AuthorPartInfo {
     private String name;
 
     /**
-     * mac地址
-     */
-    private String mac;
-
-    /**
      * ip
      */
     private String ip;
 
-    /**
-     * 硬盘
-     */
-    private String disk;
 
     /**
      * 是否长久
@@ -46,13 +37,6 @@ public class AuthorPartInfo {
         this.name = name;
     }
 
-    public String getMac() {
-        return mac;
-    }
-
-    public void setMac(String mac) {
-        this.mac = mac;
-    }
 
     public String getIp() {
         return ip;
@@ -62,13 +46,6 @@ public class AuthorPartInfo {
         this.ip = ip;
     }
 
-    public String getDisk() {
-        return disk;
-    }
-
-    public void setDisk(String disk) {
-        this.disk = disk;
-    }
 
     public Boolean getLongTerm() {
         return isLongTerm;
