@@ -37,8 +37,6 @@ public class StartRegister {
 
     private static LicenseInfo generationLicenseInfo() {
         AuthorPartInfo authorPartInfo = new AuthorPartInfo();
-        authorPartInfo.setName("");
-        authorPartInfo.setMac("123");
         authorPartInfo.setName("beauhou");
         authorPartInfo.setIp("192.168.3.190");
         LicenseFactory.build(authorPartInfo, "beauhou");
