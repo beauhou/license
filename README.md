@@ -33,7 +33,7 @@ RsaUtil - 非对称加密工具，可生成RSA秘钥对
 2.调用LicenseProcess.start方法即可使用
 
 注：LicenseProperties-属性配置，仅需指定公钥路径、license路径、
-注册机签名秘钥 **（注册机生成license是指定的秘钥，防止本地公钥被其他公钥替换）**
+注册机签名秘钥 **（注册机生成license时指定的秘钥，防止本地公钥被其他公钥替换）**
 
 与springboot整合是可将配置信息放入yaml中进行管理，容器初始化后
 调用LicenseProcess.start
